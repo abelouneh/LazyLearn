@@ -108,3 +108,27 @@
   border-radius: 6px;
   text-align: center;
 }
+
+.dropdown-with-button {
+  display: flex;
+  gap: 10px;
+}
+
+.dropdown-with-button .student-dropdown {
+  flex-grow: 1; /* Makes the dropdown take up the remaining space */
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}

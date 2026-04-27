@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view , permission_classes
 from rest_framework.response import Response
 from .models import Student, PerformanceMetric
 from .serializers import StudentSerializer
@@ -8,6 +8,8 @@ import joblib
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
 
 # 1. Standard CRUD for Students
 class StudentViewSet(viewsets.ModelViewSet):
@@ -84,3 +86,33 @@ def add_student(request):
         "id": student.id, 
         "name": f"{student.first_name} {student.last_name}"
     })
+
+@api_view(['DELETE'])
+def delete_student(request, pk):
+    try:
+        # Find the student by their ID (pk stands for Primary Key)
+        student = Student.objects.get(id=pk)
+        student.delete()
+        return Response({"message": "Student deleted successfully!"})
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found."}, status=404)
+    
+@api_view(['POST'])
+@permission_classes([AllowAny]) # Anyone is allowed to register
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    if not username or not password:
+        return Response({"error": "Username and password are required!"}, status=400)
+    
+    if User.objects.filter(username=username).exists():
+        return Response({"error": "Username is already taken!"}, status=400)
+    
+    # Create the user securely
+    user = User.objects.create_user(username=username, password=password)
+    
+    # Generate their VIP wristband (Token)
+    token, created = Token.objects.get_or_create(user=user)
+    
+    return Response({"token": token.key, "message": "User registered successfully!"})
