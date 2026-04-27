@@ -1,3 +1,4 @@
+import Dashboard from './components/Dashboard'
 import './App.css'
 
 function App() {
@@ -5,8 +6,10 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Lazy Learn 🧠</h1>
-        <p>The Vanguard is active. Awaiting API connection...</p>
       </header>
+      <main>
+        <Dashboard />
+      </main>
     </div>
   )
 }

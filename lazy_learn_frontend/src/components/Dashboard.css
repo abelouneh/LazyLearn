@@ -1,0 +1,65 @@
+.dashboard-container {
+  background-color: #242424;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  margin: 0 auto;
+  color: white;
+}
+
+.ai-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.input-group label {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #646cff;
+}
+
+.input-group input {
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+}
+
+.predict-btn {
+  background-color: #646cff;
+  color: white;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.predict-btn:hover {
+  background-color: #535bf2;
+}
+
+.result-box {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.pass { background-color: rgba(46, 204, 113, 0.2); border: 2px solid #2ecc71; color: #2ecc71; }
+.fail { background-color: rgba(231, 76, 60, 0.2); border: 2px solid #e74c3c; color: #e74c3c; }
+.error-box { margin-top: 1rem; color: #e74c3c; background-color: rgba(231, 76, 60, 0.1); padding: 1rem; border-radius: 6px; }
