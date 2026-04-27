@@ -63,3 +63,48 @@
 .pass { background-color: rgba(46, 204, 113, 0.2); border: 2px solid #2ecc71; color: #2ecc71; }
 .fail { background-color: rgba(231, 76, 60, 0.2); border: 2px solid #e74c3c; color: #e74c3c; }
 .error-box { margin-top: 1rem; color: #e74c3c; background-color: rgba(231, 76, 60, 0.1); padding: 1rem; border-radius: 6px; }
+
+.student-dropdown {
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.split-section {
+  width: 100%;
+}
+
+.add-btn {
+  background-color: #2ecc71;
+  color: white;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-btn:hover {
+  background-color: #27ae60;
+}
+
+.success-message {
+  margin-top: 1rem;
+  color: #2ecc71;
+  background-color: rgba(46, 204, 113, 0.1);
+  padding: 0.8rem;
+  border-radius: 6px;
+  text-align: center;
+}
