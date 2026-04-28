@@ -1,15 +1,17 @@
 services:
+  # 1. The Database Container
   db:
     image: mysql:8.0
     restart: always
     environment:
       MYSQL_DATABASE: lazy_learn_db
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD:
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
 
+  # 2. The Django Backend Container
   backend:
     build: ./lazy_learn_backend
     ports:
@@ -18,6 +20,7 @@ services:
       - db
     restart: on-failure 
 
+  # 3. The React + Nginx Frontend Container
   frontend:
     build: ./lazy_learn_frontend
     ports:
