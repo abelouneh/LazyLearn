@@ -3,11 +3,9 @@ import axios from 'axios';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  // --- STATE VARIABLES ---
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   
-  // State for the AI Prediction Form
   const [formData, setFormData] = useState({
     study_hours_per_week: '',
     attendance_percentage: '',
@@ -16,19 +14,24 @@ export default function Dashboard() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  // State for the Add New Student Form
   const [newStudent, setNewStudent] = useState({ first_name: '', last_name: '' });
   const [addMessage, setAddMessage] = useState('');
 
-  // --- LIFECYCLE ---
-  // Fetch students as soon as the dashboard loads
+  // --- NEW: Security Configuration ---
+  // Grab the token from memory to show to Django
+  const token = localStorage.getItem('token');
+  const authConfig = {
+    headers: { Authorization: `Token ${token}` }
+  };
+
   useEffect(() => {
     fetchStudents();
   }, []);
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/students/');
+      // Notice we added 'authConfig' to the end of the request!
+      const response = await axios.get('http://127.0.0.1:8000/api/students/', authConfig);
       setStudents(response.data);
       if (response.data.length > 0) {
         setSelectedStudentId(response.data[0].id);
@@ -38,47 +41,38 @@ export default function Dashboard() {
     }
   };
 
-  // --- EVENT HANDLERS ---
-  
-  // Handle typing in the AI prediction form
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle typing in the Add Student form
   const handleNewStudentChange = (e) => {
     setNewStudent({ ...newStudent, [e.target.name]: e.target.value });
   };
 
-  // 1. CREATE: Add a new student
   const handleAddStudent = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/students/add/', newStudent);
-      
+      // Sent with authConfig
+      const response = await axios.post('http://127.0.0.1:8000/api/students/add/', newStudent, authConfig);
       setStudents([...students, response.data]);
       setSelectedStudentId(response.data.id);
-      setNewStudent({ first_name: '', last_name: '' }); // Clear form
-      
+      setNewStudent({ first_name: '', last_name: '' }); 
       setAddMessage(`Successfully added ${response.data.name}!`);
       setTimeout(() => setAddMessage(''), 3000);
     } catch (err) {
       console.error("Failed to add student:", err);
-      setAddMessage("Error adding student. Check if Django is running.");
+      setAddMessage("Error adding student.");
     }
   };
 
-  // 2. DELETE: Remove a student
   const handleDeleteStudent = async () => {
     if (!selectedStudentId) return; 
-    
     const confirmDelete = window.confirm("Are you sure you want to delete this student?");
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/students/delete/${selectedStudentId}/`);
-      
-      // Update UI by filtering out the deleted student
+      // Sent with authConfig
+      await axios.delete(`http://127.0.0.1:8000/api/students/delete/${selectedStudentId}/`, authConfig);
       const remainingStudents = students.filter(student => student.id !== parseInt(selectedStudentId));
       setStudents(remainingStudents);
       
@@ -87,7 +81,6 @@ export default function Dashboard() {
       } else {
         setSelectedStudentId('');
       }
-      
       setResult(null); 
     } catch (err) {
       console.error("Failed to delete student:", err);
@@ -95,17 +88,17 @@ export default function Dashboard() {
     }
   };
 
-  // 3. AI PREDICTION: Submit metrics to the model
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setResult(null);
     
     try {
+      // Sent with authConfig
       const response = await axios.post('http://127.0.0.1:8000/api/predict/', {
         student_id: selectedStudentId, 
         ...formData
-      });
+      }, authConfig);
       
       const predictionValue = response.data.prediction;
       if (predictionValue === true || predictionValue === "Pass") {
@@ -119,11 +112,8 @@ export default function Dashboard() {
     }
   };
 
-  // --- RENDER (UI) ---
   return (
     <div className="dashboard-wrapper">
-      
-      {/* SECTION 1: Add Student */}
       <div className="dashboard-container split-section">
         <h2>Add New Student</h2>
         <form onSubmit={handleAddStudent} className="ai-form">
@@ -140,12 +130,9 @@ export default function Dashboard() {
         {addMessage && <div className="success-message">{addMessage}</div>}
       </div>
 
-      {/* SECTION 2: AI Prediction */}
       <div className="dashboard-container split-section">
         <h2>AI Prediction Dashboard</h2>
         <form onSubmit={handleSubmit} className="ai-form">
-          
-          {/* Dropdown & Delete Button */}
           <div className="input-group">
             <label>Select Student:</label>
             <div className="dropdown-with-button">
@@ -178,7 +165,6 @@ export default function Dashboard() {
           <button type="submit" className="predict-btn">Predict Outcome</button>
         </form>
 
-        {/* Display Prediction Result */}
         {result && (
           <div className={`result-box ${result === 'Pass' ? 'pass' : 'fail'}`}>
             <h3>AI Prediction: Student will {result}!</h3>
@@ -187,7 +173,6 @@ export default function Dashboard() {
         
         {error && <div className="error-box">{error}</div>}
       </div>
-
     </div>
   );
 }
