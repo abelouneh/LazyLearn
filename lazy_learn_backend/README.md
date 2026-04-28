@@ -45,3 +45,5 @@ API Backend / Admin Panel: http://localhost:8000/admin
 ## stopping the application
 run this command in all open terminals :
 docker-compose down 
+
+This version is still pre (student pack alteration)
