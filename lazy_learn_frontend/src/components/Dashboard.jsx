@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Dashboard.css';
 
+// --- PRODUCTION CLOUD IP ---
+const API_BASE_URL = 'http://104.248.52.100:8000';
+
 export default function Dashboard() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingStudentId, setEditingStudentId] = useState(null);
@@ -32,7 +35,7 @@ export default function Dashboard() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/students/', authConfig);
+      const response = await axios.get(`${API_BASE_URL}/api/students/`, authConfig);
       setStudents(response.data);
       if (response.data.length > 0) {
         setSelectedStudentId(response.data[0].id);
@@ -50,15 +53,12 @@ export default function Dashboard() {
     setNewStudent({ ...newStudent, [e.target.name]: e.target.value });
   };
 
-  // --- NEW: Handle Edit Button Click ---
+  // --- Handle Edit Button Click ---
   const handleEditClick = () => {
     if (!selectedStudentId) return;
     
-    // Find the student from the array to grab their name
     const studentToEdit = students.find(s => s.id === parseInt(selectedStudentId));
     if (studentToEdit) {
-      // Try to split the name into first and last if your API combines it, 
-      // otherwise fallback to empty strings to avoid errors
       const nameParts = studentToEdit.name ? studentToEdit.name.split(' ') : [];
       setNewStudent({
         first_name: studentToEdit.first_name || nameParts[0] || '',
@@ -70,15 +70,14 @@ export default function Dashboard() {
     }
   };
 
-  // --- MODIFIED: Handles both Adding and Updating ---
+  // --- Handles both Adding and Updating ---
   const handleAddOrUpdateStudent = async (e) => {
     e.preventDefault();
     try {
       if (isEditing) {
         // --- DO UPDATE (PUT) ---
-        const response = await axios.put(`http://127.0.0.1:8000/api/students/${editingStudentId}/update/`, newStudent, authConfig);
+        const response = await axios.put(`${API_BASE_URL}/api/students/${editingStudentId}/update/`, newStudent, authConfig);
         
-        // Update the specific student in our local state list
         setStudents(students.map(s => s.id === editingStudentId ? response.data : s));
         
         setAddMessage(`Successfully updated!`);
@@ -86,13 +85,12 @@ export default function Dashboard() {
         setEditingStudentId(null);
       } else {
         // --- DO ADD (POST) ---
-        const response = await axios.post('http://127.0.0.1:8000/api/students/add/', newStudent, authConfig);
+        const response = await axios.post(`${API_BASE_URL}/api/students/add/`, newStudent, authConfig);
         setStudents([...students, response.data]);
         setSelectedStudentId(response.data.id);
         setAddMessage(`Successfully added ${response.data.name || newStudent.first_name}!`);
       }
       
-      // Clear out the form
       setNewStudent({ first_name: '', last_name: '' }); 
       setTimeout(() => setAddMessage(''), 3000);
       
@@ -114,7 +112,7 @@ export default function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/students/delete/${selectedStudentId}/`, authConfig);
+      await axios.delete(`${API_BASE_URL}/api/students/delete/${selectedStudentId}/`, authConfig);
       const remainingStudents = students.filter(student => student.id !== parseInt(selectedStudentId));
       setStudents(remainingStudents);
       
@@ -136,7 +134,7 @@ export default function Dashboard() {
     setResult(null);
     
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/predict/', {
+      const response = await axios.post(`${API_BASE_URL}/api/predict/`, {
         student_id: selectedStudentId, 
         ...formData
       }, authConfig);
@@ -156,10 +154,8 @@ export default function Dashboard() {
   return (
     <div className="dashboard-wrapper">
       <div className="dashboard-container split-section">
-        {/* Dynamic Header */}
         <h2>{isEditing ? "Edit Student" : "Add New Student"}</h2>
         
-        {/* Pointed to the new AddOrUpdate handler */}
         <form onSubmit={handleAddOrUpdateStudent} className="ai-form">
           <div className="input-group">
             <label>First Name:</label>
@@ -196,7 +192,6 @@ export default function Dashboard() {
                   </option>
                 ))}
               </select>
-              {/* --- NEW: Edit Button Placed Here --- */}
               <button type="button" onClick={handleEditClick} className="edit-btn">Edit</button>
               <button type="button" onClick={handleDeleteStudent} className="delete-btn">Delete</button>
             </div>

@@ -2,6 +2,9 @@ import { useState } from 'react';
 import axios from 'axios';
 import './Auth.css';
 
+// --- PRODUCTION CLOUD IP ---
+const API_BASE_URL = 'http://104.248.52.100:8000';
+
 export default function Auth({ setToken }) {
   // State to toggle between Login and Register modes
   const [isLogin, setIsLogin] = useState(true);
@@ -21,8 +24,8 @@ export default function Auth({ setToken }) {
 
     // Decide which backend door to use based on the toggle
     const url = isLogin 
-      ? 'http://127.0.0.1:8000/api/login/' 
-      : 'http://127.0.0.1:8000/api/register/';
+      ? `${API_BASE_URL}/api/login/` 
+      : `${API_BASE_URL}/api/register/`;
 
     try {
       const response = await axios.post(url, {
