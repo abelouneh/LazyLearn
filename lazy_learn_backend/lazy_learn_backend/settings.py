@@ -126,6 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+ALLOWED_HOSTS = ['104.248.52.100', 'localhost', '127.0.0.1']
 
 # Here we secure our api we are working with for the django
 REST_FRAMEWORK = {
