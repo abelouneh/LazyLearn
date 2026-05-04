@@ -132,3 +132,25 @@
 .delete-btn:hover {
   background-color: #c0392b;
 }
+
+/* Ensure the buttons sit nicely next to each other */
+.action-buttons {
+  display: flex;
+  gap: 10px; 
+  margin-top: 10px;
+}
+
+.edit-btn {
+  background-color: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-btn:hover {
+  background-color: #2563eb; 
+}

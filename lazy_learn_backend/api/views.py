@@ -116,3 +116,22 @@ def register_user(request):
     token, created = Token.objects.get_or_create(user=user)
     
     return Response({"token": token.key, "message": "User registered successfully!"})
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Student
+from .serializers import StudentSerializer
+
+@api_view(['PUT'])
+def update_student(request, pk):
+    try:
+        student = Student.objects.get(pk=pk)
+    except Student.DoesNotExist:
+        return Response({'error': 'Student not found'}, status=404)
+
+    # partial=True allows you to update just some fields without requiring all of them
+    serializer = StudentSerializer(student, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)

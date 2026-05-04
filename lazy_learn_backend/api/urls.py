@@ -17,6 +17,6 @@ urlpatterns = [
     path('students/delete/<int:pk>/', views.delete_student, name='delete_student'),
     path('students/', views.get_students, name='students'),
     path('predict/', views.predict_performance, name='predict'),
-    
+    path('students/<int:pk>/update/', views.update_student, name='update_student'),
     path('', include(router.urls)),
 ]

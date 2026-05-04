@@ -3,6 +3,9 @@ import axios from 'axios';
 import './Dashboard.css';
 
 export default function Dashboard() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingStudentId, setEditingStudentId] = useState(null);
+  
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   
@@ -17,8 +20,7 @@ export default function Dashboard() {
   const [newStudent, setNewStudent] = useState({ first_name: '', last_name: '' });
   const [addMessage, setAddMessage] = useState('');
 
-  // --- NEW: Security Configuration ---
-  // Grab the token from memory to show to Django
+  // --- Security Configuration ---
   const token = localStorage.getItem('token');
   const authConfig = {
     headers: { Authorization: `Token ${token}` }
@@ -30,7 +32,6 @@ export default function Dashboard() {
 
   const fetchStudents = async () => {
     try {
-      // Notice we added 'authConfig' to the end of the request!
       const response = await axios.get('http://127.0.0.1:8000/api/students/', authConfig);
       setStudents(response.data);
       if (response.data.length > 0) {
@@ -49,20 +50,62 @@ export default function Dashboard() {
     setNewStudent({ ...newStudent, [e.target.name]: e.target.value });
   };
 
-  const handleAddStudent = async (e) => {
+  // --- NEW: Handle Edit Button Click ---
+  const handleEditClick = () => {
+    if (!selectedStudentId) return;
+    
+    // Find the student from the array to grab their name
+    const studentToEdit = students.find(s => s.id === parseInt(selectedStudentId));
+    if (studentToEdit) {
+      // Try to split the name into first and last if your API combines it, 
+      // otherwise fallback to empty strings to avoid errors
+      const nameParts = studentToEdit.name ? studentToEdit.name.split(' ') : [];
+      setNewStudent({
+        first_name: studentToEdit.first_name || nameParts[0] || '',
+        last_name: studentToEdit.last_name || nameParts.slice(1).join(' ') || ''
+      });
+      
+      setIsEditing(true);
+      setEditingStudentId(studentToEdit.id);
+    }
+  };
+
+  // --- MODIFIED: Handles both Adding and Updating ---
+  const handleAddOrUpdateStudent = async (e) => {
     e.preventDefault();
     try {
-      // Sent with authConfig
-      const response = await axios.post('http://127.0.0.1:8000/api/students/add/', newStudent, authConfig);
-      setStudents([...students, response.data]);
-      setSelectedStudentId(response.data.id);
+      if (isEditing) {
+        // --- DO UPDATE (PUT) ---
+        const response = await axios.put(`http://127.0.0.1:8000/api/students/${editingStudentId}/update/`, newStudent, authConfig);
+        
+        // Update the specific student in our local state list
+        setStudents(students.map(s => s.id === editingStudentId ? response.data : s));
+        
+        setAddMessage(`Successfully updated!`);
+        setIsEditing(false);
+        setEditingStudentId(null);
+      } else {
+        // --- DO ADD (POST) ---
+        const response = await axios.post('http://127.0.0.1:8000/api/students/add/', newStudent, authConfig);
+        setStudents([...students, response.data]);
+        setSelectedStudentId(response.data.id);
+        setAddMessage(`Successfully added ${response.data.name || newStudent.first_name}!`);
+      }
+      
+      // Clear out the form
       setNewStudent({ first_name: '', last_name: '' }); 
-      setAddMessage(`Successfully added ${response.data.name}!`);
       setTimeout(() => setAddMessage(''), 3000);
+      
     } catch (err) {
-      console.error("Failed to add student:", err);
-      setAddMessage("Error adding student.");
+      console.error("Failed to save student:", err);
+      setAddMessage("Error saving student.");
     }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingStudentId(null);
+    setNewStudent({ first_name: '', last_name: '' });
   };
 
   const handleDeleteStudent = async () => {
@@ -71,7 +114,6 @@ export default function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      // Sent with authConfig
       await axios.delete(`http://127.0.0.1:8000/api/students/delete/${selectedStudentId}/`, authConfig);
       const remainingStudents = students.filter(student => student.id !== parseInt(selectedStudentId));
       setStudents(remainingStudents);
@@ -94,7 +136,6 @@ export default function Dashboard() {
     setResult(null);
     
     try {
-      // Sent with authConfig
       const response = await axios.post('http://127.0.0.1:8000/api/predict/', {
         student_id: selectedStudentId, 
         ...formData
@@ -115,8 +156,11 @@ export default function Dashboard() {
   return (
     <div className="dashboard-wrapper">
       <div className="dashboard-container split-section">
-        <h2>Add New Student</h2>
-        <form onSubmit={handleAddStudent} className="ai-form">
+        {/* Dynamic Header */}
+        <h2>{isEditing ? "Edit Student" : "Add New Student"}</h2>
+        
+        {/* Pointed to the new AddOrUpdate handler */}
+        <form onSubmit={handleAddOrUpdateStudent} className="ai-form">
           <div className="input-group">
             <label>First Name:</label>
             <input type="text" name="first_name" value={newStudent.first_name} onChange={handleNewStudentChange} required />
@@ -125,7 +169,16 @@ export default function Dashboard() {
             <label>Last Name:</label>
             <input type="text" name="last_name" value={newStudent.last_name} onChange={handleNewStudentChange} required />
           </div>
-          <button type="submit" className="add-btn">Add Student</button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button type="submit" className="add-btn">
+              {isEditing ? "Update Student" : "Add Student"}
+            </button>
+            {isEditing && (
+              <button type="button" onClick={handleCancelEdit} style={{ padding: '8px 16px', cursor: 'pointer' }}>
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
         {addMessage && <div className="success-message">{addMessage}</div>}
       </div>
@@ -143,6 +196,8 @@ export default function Dashboard() {
                   </option>
                 ))}
               </select>
+              {/* --- NEW: Edit Button Placed Here --- */}
+              <button type="button" onClick={handleEditClick} className="edit-btn">Edit</button>
               <button type="button" onClick={handleDeleteStudent} className="delete-btn">Delete</button>
             </div>
           </div>
